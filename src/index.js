@@ -1,7 +1,32 @@
+// index.js
+
 import './pages/index.css';
-import { initialCards } from './components/cards.js';
+// import { initialCards } from './components/cards.js';
 import { createCard, deleteCard, handleLikeClick } from './components/card.js';
 import { openPopup, closePopup, handleOverlayClick } from './components/modal.js';
+import { enableValidation, clearValidation, hasInvalidInput, toggleButtonState } from './components/validation.js'; // Импортируем функции
+import { getUserInfo } from './api.js';
+
+getUserInfo()
+  .then(user => {
+    console.log(user);
+  })
+  .catch(err => {
+    console.error(err);
+  });
+  
+// Валидация
+const validationSettings = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__input-error_visible'
+};
+
+// Включение валидации
+enableValidation(validationSettings);
 
 document.addEventListener('DOMContentLoaded', () => {
   initializeModals();
@@ -28,7 +53,7 @@ function handleImageClick(card) {
   openPopup(popupImage);
 }
 
-// Инициализация модальных окон
+// Модальные окона и формы
 function initializeModals() {
   const editProfileButton = document.querySelector('.profile__edit-button');
   const addPlaceButton = document.querySelector('.profile__add-button');
@@ -41,27 +66,32 @@ function initializeModals() {
   const profileName = document.querySelector('.profile__title');
   const profileDescription = document.querySelector('.profile__description');
 
-  // Находим форму в DOM
-  const formEditProfile = document.querySelector('.popup__form[name="edit-profile"]');
-  const formNewCard = document.querySelector('.popup__form[name="new-place"]');
+  const formEditProfile = popupEditProfile.querySelector('.popup__form');
+  const formNewCard = popupNewCard.querySelector('.popup__form');
 
-  // Находим поля формы в DOM
-  const nameInput = document.querySelector('.popup__input_type_name');
-  const jobInput = document.querySelector('.popup__input_type_description');
+  const nameInput = formEditProfile.querySelector('.popup__input_type_name');
+  const jobInput = formEditProfile.querySelector('.popup__input_type_description');
 
-  const cardNameInput = document.querySelector('.popup__input_type_card-name');
-  const cardLinkInput = document.querySelector('.popup__input_type_url');
+  const cardNameInput = formNewCard.querySelector('.popup__input_type_name');
+  const cardLinkInput = formNewCard.querySelector('.popup__input_type_url');
 
-  // Добавляем обработчики событий для открытия попапов
+  // Открытие попапа редактирования профиля
   editProfileButton.addEventListener('click', () => {
     nameInput.value = profileName.textContent;
     jobInput.value = profileDescription.textContent;
+    clearValidation(formEditProfile, validationSettings);
     openPopup(popupEditProfile);
   });
 
-  addPlaceButton.addEventListener('click', () => openPopup(popupNewCard));
+  // Открытие попапа добавления нового места
+  addPlaceButton.addEventListener('click', () => {
+    cardNameInput.value = '';
+    cardLinkInput.value = '';
+    clearValidation(formNewCard, validationSettings);
+    openPopup(popupNewCard);
+  });
 
-  // Добавляем обработчики событий для закрытия попапов
+  // Закрытие попапов
   closeButtons.forEach(button => {
     button.addEventListener('click', (event) => {
       const popup = event.target.closest('.popup');
@@ -69,59 +99,53 @@ function initializeModals() {
     });
   });
 
-  // Закрытие попапа при клике на затемнённую область
+  // Закрытие попапа при клике на затемненную область
   popups.forEach(popup => {
     popup.addEventListener('click', handleOverlayClick);
   });
 
-  // Обработчик отправки формы редактирования профиля
-  function editProfile(evt) {
-    evt.preventDefault(); // Эта строчка отменяет стандартную отправку формы.
+  // Обработка отправки формы редактирования профиля
+  formEditProfile.addEventListener('submit', (evt) => {
+    evt.preventDefault();
 
-    // Получите значение полей jobInput и nameInput из свойства value
     const nameValue = nameInput.value;
     const jobValue = jobInput.value;
 
-    // Выберите элементы, куда должны быть вставлены значения полей
-    const profileNameElement = document.querySelector('.profile__title');
-    const profileJobElement = document.querySelector('.profile__description');
+    profileName.textContent = nameValue;
+    profileDescription.textContent = jobValue;
 
-    // Вставьте новые значения с помощью textContent
-    profileNameElement.textContent = nameValue;
-    profileJobElement.textContent = jobValue;
-
-    // Закрыть попап после сохранения
     closePopup(popupEditProfile);
-  }
+  });
 
-  // Прикрепляем обработчик к форме:
-  formEditProfile.addEventListener('submit', editProfile);
+  formNewCard.addEventListener('submit', (evt) => {
+    evt.preventDefault();
 
-  // Обработчик «отправки» формы добавления новой карточки
-  function handleNewCardSubmit(evt) {
-    evt.preventDefault(); // Эта строчка отменяет стандартную отправку формы.
-
-    // Получите значение полей cardNameInput и cardLinkInput из свойства value
     const cardNameValue = cardNameInput.value;
     const cardLinkValue = cardLinkInput.value;
 
-    // Создайте новую карточку
     const newCard = { name: cardNameValue, link: cardLinkValue };
-    const cardElement = createCard(newCard);
+    const cardElement = createCard(newCard, deleteCard, handleLikeClick, handleImageClick);
 
-    // Добавьте новую карточку в начало списка
     document.querySelector('.places__list').prepend(cardElement);
 
-    // Очистите форму
     formNewCard.reset();
+    checkFormValidity(formNewCard);
 
-    // Закройте попап после добавления карточки
     closePopup(popupNewCard);
-  }
+  });
 
-  // Прикрепляем обработчик к форме:
-  formNewCard.addEventListener('submit', handleNewCardSubmit);
+  // Обработка валидации при вводе в поля
+  [nameInput, jobInput].forEach(input => {
+    input.addEventListener('input', () => {
+      checkFormValidity(formEditProfile);
+    });
+  });
 }
 
-
-
+function checkFormValidity(form) {
+  const inputList = Array.from(form.querySelectorAll(validationSettings.inputSelector));
+  const buttonElement = form.querySelector(validationSettings.submitButtonSelector);
+  const isValid = !hasInvalidInput(inputList);
+  
+  toggleButtonState(inputList, buttonElement, validationSettings.inactiveButtonClass);
+}

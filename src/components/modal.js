@@ -1,3 +1,5 @@
+// modal.js
+
 import { createCard } from './card.js';
 
 // Функция открытия попапа
@@ -31,8 +33,6 @@ export function handleOverlayClick(event) {
     closePopup(event.target);
   }
 }
-
-
 
 
 
