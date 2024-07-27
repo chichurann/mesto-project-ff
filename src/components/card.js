@@ -1,4 +1,4 @@
-// card.js старый
+// card.js
 
 import { openPopup } from './modal.js';
 

@@ -1,4 +1,4 @@
-// modal.js старый
+// modal.js
 
 import { createCard } from './card.js';
 

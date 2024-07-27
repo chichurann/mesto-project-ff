@@ -1,4 +1,4 @@
-// index.js старое (до api)
+// index.js
 import './pages/index.css';
 import { initialCards } from './components/cards.js';
 import { createCard, deleteCard, handleLikeClick } from './components/card.js';
@@ -62,7 +62,7 @@ function initializeModals() {
   const nameInput = formEditProfile.querySelector('.popup__input_type_name');
   const jobInput = formEditProfile.querySelector('.popup__input_type_description');
 
-  const cardNameInput = formNewCard.querySelector('.popup__input_type_card-name');
+  const cardNameInput = formNewCard.querySelector('.popup__input_type_name');
   const cardLinkInput = formNewCard.querySelector('.popup__input_type_url');
 
   // Открытие попапа редактирования профиля
