@@ -75,8 +75,12 @@ function initializeModals() {
 
   // Открытие попапа добавления нового места
   addPlaceButton.addEventListener('click', () => {
+    formNewCard.reset(); // Сброс формы
     clearValidation(formNewCard, validationSettings); // Очистка ошибок
     openPopup(popupNewCard);
+    // Деактивация кнопки после сброса формы
+    const buttonElement = formNewCard.querySelector(validationSettings.submitButtonSelector);
+    toggleButtonState([cardNameInput, cardLinkInput], buttonElement, validationSettings.inactiveButtonClass);
   });
 
   // Закрытие попапов
@@ -117,6 +121,10 @@ function initializeModals() {
     document.querySelector('.places__list').prepend(cardElement);
 
     formNewCard.reset();
+
+    // Деактивация кнопки после очистки формы
+    const buttonElement = formNewCard.querySelector(validationSettings.submitButtonSelector);
+    toggleButtonState([cardNameInput, cardLinkInput], buttonElement, validationSettings.inactiveButtonClass);
 
     closePopup(popupNewCard);
   });
