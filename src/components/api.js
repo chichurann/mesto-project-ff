@@ -20,8 +20,7 @@
 // export const getMe = () => {
 //   return fetch(`${config.baseUrl}/users/me`, {
 //     headers: config.headers
-//   })
-//     .then(checkResponse);
+//   }).then(checkResponse);
 // };
 
 // // Обновление профиля пользователя
@@ -30,26 +29,14 @@
 //     method: 'PATCH',
 //     headers: config.headers,
 //     body: JSON.stringify({ name, about })
-//   })
-//     .then(checkResponse);
-// };
-
-// // Обновление аватара пользователя
-// export const updateUserPhoto = (avatar) => {
-//   return fetch(`${config.baseUrl}/users/me/avatar`, {
-//     method: 'PATCH',
-//     headers: config.headers,
-//     body: JSON.stringify({ avatar })
-//   })
-//     .then(checkResponse);
+//   }).then(checkResponse);
 // };
 
 // // Получение всех карточек
 // export const getCards = () => {
 //   return fetch(`${config.baseUrl}/cards`, {
 //     headers: config.headers
-//   })
-//     .then(checkResponse);
+//   }).then(checkResponse);
 // };
 
 // // Добавление новой карточки
@@ -58,8 +45,7 @@
 //     method: 'POST',
 //     headers: config.headers,
 //     body: JSON.stringify(card)
-//   })
-//     .then(checkResponse);
+//   }).then(checkResponse);
 // };
 
 // // Удаление карточки
@@ -67,8 +53,7 @@
 //   return fetch(`${config.baseUrl}/cards/${id}`, {
 //     method: 'DELETE',
 //     headers: config.headers
-//   })
-//     .then(checkResponse);
+//   }).then(checkResponse);
 // };
 
 // // Переключение лайка карточки
@@ -76,8 +61,16 @@
 //   return fetch(`${config.baseUrl}/cards/likes/${id}`, {
 //     method: isLiked ? 'DELETE' : 'PUT',
 //     headers: config.headers
-//   })
-//     .then(checkResponse);
+//   }).then(checkResponse);
+// };
+
+// // Обновление аватара пользователя
+// export const updateAvatar = (avatar) => {
+//   return fetch(`${config.baseUrl}/users/me/avatar`, {
+//     method: 'PATCH',
+//     headers: config.headers,
+//     body: JSON.stringify({ avatar })
+//   }).then(checkResponse);
 // };
 
 

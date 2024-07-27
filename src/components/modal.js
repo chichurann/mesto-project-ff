@@ -1,4 +1,4 @@
-// modal.js
+// modal.js старый
 
 import { createCard } from './card.js';
 
@@ -33,6 +33,4 @@ export function handleOverlayClick(event) {
     closePopup(event.target);
   }
 }
-
-
 
