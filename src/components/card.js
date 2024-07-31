@@ -17,12 +17,8 @@ const onDeleteCard = (cardElement, card) => {
     });
 };
 
-const onLike = (cardElement, card) => {
-  const isLiked = cardElement
-    .querySelector(".card__like-button")
-    .classList.contains("card__like-button_is-active");
-  const likeAmount = cardElement.querySelector(".card__like-amount");
-  const likeButton = cardElement.querySelector(".card__like-button");
+const onLike = (card, likeButton, likeAmount) => {
+  const isLiked = likeButton.classList.contains("card__like-button_is-active");
 
   if (isLiked) {
     deleteLikeOnCard(card._id)
@@ -88,7 +84,7 @@ const renderCard = (
 
   // Обработчик события лайка карточки
   likeButton.addEventListener("click", () => {
-    onLike(cardElement, card);
+    onLike(card, likeButton, likeAmount);
   });
 
   return cardElement;

@@ -139,7 +139,8 @@ function initializeModals(validationSettings) {
   // Форма редактирования профиля
   formEditProfile.addEventListener("submit", (evt) => {
     evt.preventDefault();
-    evt.submitter.textContent = "Сохранение...";
+    const submitButton = evt.submitter;
+    submitButton.textContent = "Сохранение...";
 
     const nameValue = nameInput.value;
     const jobValue = jobInput.value;
@@ -166,18 +167,18 @@ function initializeModals(validationSettings) {
     );
     toggleButtonState([avatarInput], buttonElement, validationSettings);
   });
-
+ 
   // Форма редактирования аватарки
   formEditAvatar.addEventListener("submit", (evt) => {
     evt.preventDefault();
-    evt.submitter.textContent = "Сохранение...";
+    const submitButton = evt.submitter;
+    submitButton.textContent = "Сохранение...";
 
     const avatarValue = avatarInput.value;
 
     updateAvatar(avatarValue)
       .then(() => {
-        const profileAvatarEditButton =
-          document.querySelector(".profile__image");
+        const profileAvatarEditButton = document.querySelector(".profile__image");
         profileAvatarEditButton.style.backgroundImage = `url(${avatarValue})`;
         closePopup(popupEditAvatar);
       })
@@ -210,10 +211,11 @@ function initializeModals(validationSettings) {
     });
   });
 
-  //  Создание и добавление новой карточки
+  // Создание и добавление новой карточки
   formNewCard.addEventListener("submit", (evt) => {
     evt.preventDefault();
-    evt.submitter.textContent = "Сохранение...";
+    const submitButton = evt.submitter;
+    submitButton.textContent = "Сохранение...";
 
     const placesList = document.querySelector(".places__list");
     const nameValue = cardNameInput.value;
