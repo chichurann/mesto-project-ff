@@ -3,13 +3,54 @@ import { deleteCard, putLikeOnCard, deleteLikeOnCard } from "./api.js";
 
 const cardTemplate = document.querySelector("#card-template").content;
 
+const changeLikeElement = (likeButton) => {
+  likeButton.classList.toggle("card__like-button_is-active");
+};
+
+const onDeleteCard = (cardElement, card) => {
+  deleteCard(card._id)
+    .then(() => {
+      cardElement.remove();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+const onLike = (cardElement, card) => {
+  const isLiked = cardElement
+    .querySelector(".card__like-button")
+    .classList.contains("card__like-button_is-active");
+  const likeAmount = cardElement.querySelector(".card__like-amount");
+  const likeButton = cardElement.querySelector(".card__like-button");
+
+  if (isLiked) {
+    deleteLikeOnCard(card._id)
+      .then((res) => {
+        likeAmount.textContent = res.likes.length || 0;
+        changeLikeElement(likeButton);
+        return res;
+      })
+      .catch((error) => console.error("Ошибка при снятии лайка:", error));
+  } else {
+    putLikeOnCard(card._id)
+      .then((res) => {
+        likeAmount.textContent = res.likes.length || 0;
+        changeLikeElement(likeButton);
+        return res;
+      })
+      .catch((error) => console.error("Ошибка при лайке:", error));
+  }
+};
+
 // Функция рендер карточки
-export function renderCard(
+const renderCard = (
   card,
-  getProfileAndCards,
   handleImageClick,
-  profileId
-) {
+  profileId,
+  onDeleteCard,
+  onLike
+) => {
   const cardElement = cardTemplate
     .querySelector(".places__item")
     .cloneNode(true);
@@ -42,29 +83,15 @@ export function renderCard(
 
   // Обработчик события удаления карточки
   deleteButton.addEventListener("click", () => {
-    deleteCard(card._id)
-      .then(() => {
-        getProfileAndCards();
-      })
-      .catch((error) => console.error("Ошибка при удалении карточки:", error));
+    onDeleteCard(cardElement, card);
   });
 
   // Обработчик события лайка карточки
   likeButton.addEventListener("click", () => {
-    if (!card.likes.find((likeInfo) => likeInfo._id === profileId)) {
-      putLikeOnCard(card._id)
-        .then(() => {
-          getProfileAndCards();
-        })
-        .catch((error) => console.error("Ошибка при лайке:", error));
-    } else {
-      deleteLikeOnCard(card._id)
-        .then(() => {
-          getProfileAndCards();
-        })
-        .catch((error) => console.error("Ошибка при снятии лайка:", error));
-    }
+    onLike(cardElement, card);
   });
 
   return cardElement;
-}
+};
+
+export { renderCard, onDeleteCard, onLike };

@@ -1,15 +1,12 @@
 // validation.js
-const hasInvalidInput = (inputList) => {
-  return inputList.some((inputElement) => !inputElement.validity.valid);
-};
-
-const toggleButtonState = (inputList, buttonElement, disabledClass) => {
-  if (hasInvalidInput(inputList)) {
-    buttonElement.classList.add(disabledClass);
-    buttonElement.disabled = true;
+const toggleButtonState = (inputs, button, validationSettings) => {
+  const hasInvalidInput = inputs.some((input) => !input.validity.valid);
+  if (hasInvalidInput) {
+    button.classList.add(validationSettings.inactiveButtonClass);
+    button.disabled = true;
   } else {
-    buttonElement.classList.remove(disabledClass);
-    buttonElement.disabled = false;
+    button.classList.remove(validationSettings.inactiveButtonClass);
+    button.disabled = false;
   }
 };
 
@@ -104,4 +101,20 @@ const clearValidation = (form, validationCfg) => {
   );
 };
 
-export { enableValidation, clearValidation };
+// Функция для проверки валидности формы
+const checkFormValidity = (formElement, validationSettings) => {
+  const inputs = Array.from(
+    formElement.querySelectorAll(validationSettings.inputSelector)
+  );
+  const button = formElement.querySelector(
+    validationSettings.submitButtonSelector
+  );
+  toggleButtonState(inputs, button, validationSettings);
+};
+
+export {
+  enableValidation,
+  clearValidation,
+  toggleButtonState,
+  checkFormValidity,
+};

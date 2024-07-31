@@ -1,12 +1,17 @@
 // index.js
 import "./pages/index.css";
-import { renderCard } from "./components/card.js";
+import { renderCard, onDeleteCard, onLike } from "./components/card.js";
 import {
   openPopup,
   closePopup,
   handleOverlayClick,
 } from "./components/modal.js";
-import { enableValidation, clearValidation } from "./components/validation.js";
+import {
+  enableValidation,
+  clearValidation,
+  toggleButtonState,
+  checkFormValidity,
+} from "./components/validation.js";
 import {
   updateAvatar,
   getProfileInfo,
@@ -15,7 +20,10 @@ import {
   createCard,
 } from "./components/api";
 
-const waitButtonText = "Сохранение...";
+export const localData = {
+  userData: {},
+  cardsData: [],
+};
 
 function handleImageClick(card) {
   const popupImage = document.querySelector(".popup_type_image");
@@ -27,36 +35,6 @@ function handleImageClick(card) {
   popupCaption.textContent = card.name;
 
   openPopup(popupImage);
-}
-
-// Общая функция для загрузки данных пользователя и обновления карточек
-function getProfileAndCards() {
-  const placesList = document.querySelector(".places__list");
-  Promise.all([getProfileInfo(), getInitialCards()])
-    .then(([profileData, initialCards]) => {
-      const profileId = profileData._id;
-      placesList.innerHTML = "";
-      initialCards.forEach((card) => {
-        // Проверка на корректность данных карточек
-        if (card && card.name && card.link) {
-          const cardElement = renderCard(
-            card,
-            getProfileAndCards,
-            handleImageClick,
-            profileId
-          );
-          placesList.append(cardElement);
-        } else {
-          console.error("Некорректные данные карточки", card);
-        }
-      });
-    })
-    .catch((error) =>
-      console.error(
-        "Ошибка при получении данных пользователя или карточек:",
-        error
-      )
-    );
 }
 
 // Первоначальная загрузка страницы
@@ -72,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   Promise.all([getProfileInfo(), getInitialCards()])
     .then(([profileData, initialCards]) => {
-      profileId = profileData._id;
+      localData.userData = profileData;
       profileAvatarContainer.querySelector(
         ".profile__image"
       ).style.backgroundImage = `url(${profileData.avatar})`;
@@ -83,9 +61,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (card && card.name && card.link) {
           const cardElement = renderCard(
             card,
-            getProfileAndCards,
             handleImageClick,
-            profileId
+            localData.userData._id,
+            onDeleteCard,
+            onLike
           );
           placesList.append(cardElement);
         } else {
@@ -160,6 +139,7 @@ function initializeModals(validationSettings) {
   // Форма редактирования профиля
   formEditProfile.addEventListener("submit", (evt) => {
     evt.preventDefault();
+    evt.submitter.textContent = "Сохранение...";
 
     const nameValue = nameInput.value;
     const jobValue = jobInput.value;
@@ -172,7 +152,7 @@ function initializeModals(validationSettings) {
       })
       .catch((error) => console.error("Ошибка при обновлении профиля:", error))
       .finally(() => {
-        submitButton.textContent = waitButtonText;
+        submitButton.textContent = "Сохранить";
       });
   });
 
@@ -190,6 +170,7 @@ function initializeModals(validationSettings) {
   // Форма редактирования аватарки
   formEditAvatar.addEventListener("submit", (evt) => {
     evt.preventDefault();
+    evt.submitter.textContent = "Сохранение...";
 
     const avatarValue = avatarInput.value;
 
@@ -202,7 +183,7 @@ function initializeModals(validationSettings) {
       })
       .catch((error) => console.error("Ошибка при обновлении аватара:", error))
       .finally(() => {
-        submitButton.textContent = waitButtonText;
+        submitButton.textContent = "Сохранить";
       });
   });
 
@@ -232,19 +213,28 @@ function initializeModals(validationSettings) {
   //  Создание и добавление новой карточки
   formNewCard.addEventListener("submit", (evt) => {
     evt.preventDefault();
+    evt.submitter.textContent = "Сохранение...";
 
     const placesList = document.querySelector(".places__list");
     const nameValue = cardNameInput.value;
     const linkValue = cardLinkInput.value;
 
     createCard(nameValue, linkValue)
-      .then(() => {
+      .then((res) => {
+        placesList.prepend(
+          renderCard(
+            res,
+            handleImageClick,
+            localData.userData._id,
+            onDeleteCard,
+            onLike
+          )
+        );
         closePopup(popupNewCard);
-        getProfileAndCards();
       })
       .catch((error) => console.error("Ошибка при добавлении карточки:", error))
       .finally(() => {
-        submitButton.textContent = waitButtonText;
+        submitButton.textContent = "Сохранить";
       });
   });
 
@@ -267,27 +257,4 @@ function initializeModals(validationSettings) {
   avatarInput.addEventListener("input", () => {
     checkFormValidity(formEditAvatar, validationSettings);
   });
-}
-
-// Функция для включения/отключения кнопки отправки формы
-function toggleButtonState(inputs, button, validationSettings) {
-  const hasInvalidInput = inputs.some((input) => !input.validity.valid);
-  if (hasInvalidInput) {
-    button.classList.add(validationSettings.inactiveButtonClass);
-    button.disabled = true;
-  } else {
-    button.classList.remove(validationSettings.inactiveButtonClass);
-    button.disabled = false;
-  }
-}
-
-// Функция для проверки валидности формы
-function checkFormValidity(formElement, validationSettings) {
-  const inputs = Array.from(
-    formElement.querySelectorAll(validationSettings.inputSelector)
-  );
-  const button = formElement.querySelector(
-    validationSettings.submitButtonSelector
-  );
-  toggleButtonState(inputs, button, validationSettings);
 }
